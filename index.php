@@ -6,7 +6,24 @@
     <title>Employee Task Tracker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
 
+
+<style>/* Custom CSS for chart container */
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* Optional: Make the chart containers responsive */
+@media (max-width: 768px) {
+    .col-md-4 {
+        width: 100%;
+    }
+}
+</style>
 </head>
 <body>
 <div class="container mt-5">
@@ -78,10 +95,17 @@
                 <th>Module</th>
                 <th>Task</th>
                 <th>Task Type</th>
-                <th>Priority</th>
-                <th>Expected Delivery</th>
+                <th>
+                Priority 
+                <button class="btn btn-sm btn-light sort-btn" data-sort="priority">↕</button>
+            </th>
+            <th>
+                Expected Delivery 
+                <button class="btn btn-sm btn-light sort-btn" data-sort="expected_delivery">↕</button>
+            </th>
                 <th>Deep Description</th>
                 <th>Status</th>
+                <th>Remarks</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -90,10 +114,39 @@
         </tbody>
     </table>
 </div>
+<!-- Pie Charts Section -->
+<div class="row mt-4 justify-content-center">
+    <div class="col-md-3 col-sm-8 mb-3">
+        <h4>Status Distribution</h4>
+        <canvas id="statusPieChart"></canvas>
+    </div>
+    <div class="col-md-3 col-sm-8 mb-3">
+        <h4>Priority Distribution</h4>
+        <canvas id="priorityPieChart"></canvas>
+    </div>
+    <div class="col-md-3 col-sm-8 mb-3">
+        <h4>Task Type Distribution</h4>
+        <canvas id="taskTypePieChart"></canvas>
+    </div>
+</div>
 
+
+<script src="js\script.js"></script> <!-- Make sure this file is linked in your HTML -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="jquery-3.6.0.min.js"></script>
 <script>
+$(document).ready(function() {
+    loadTasks(); // Load tasks when the page loads
+    updateCharts(); // Load charts when the page loads
+});
+</script>
+
+<script>
+
+
     $(document).ready(function(){
         function loadTasks(){
             $.ajax({
@@ -107,20 +160,55 @@
 
         // Load tasks on page load
         loadTasks();
+        updateCharts();
 
-        // Submit Task
-        $('#taskForm').submit(function(e){
-            e.preventDefault();
-            $.ajax({
-                url: 'add_task.php',
-                type: 'POST',
-                data: $(this).serialize(),
-                success: function(response){
-                    alert('Task Added Successfully!');
-                    loadTasks();
-                }
-            });
+        // // Submit Task
+        // $('#taskForm').submit(function(e){
+        //     e.preventDefault();
+        //     $.ajax({
+        //         url: 'add_task.php',
+        //         type: 'POST',
+        //         data: $(this).serialize(),
+        //         success: function(response){
+        //             alert('Task Added Successfully!');
+        //             loadTasks();
+        //             updateCharts();
+        //         }
+        //     });
+        // });
+
+
+        $(document).ready(function() {
+    // Ensure the task form is being submitted properly
+    $('#taskForm').submit(function(e){
+        e.preventDefault(); // Prevent the default form submission
+
+        // Collect form data
+        var formData = $(this).serialize();
+
+        // Make AJAX request to add the task
+        $.ajax({
+            url: 'add_task.php', // Your server-side PHP file that handles task addition
+            type: 'POST',
+            data: formData,
+            success: function(response){
+                alert('Task Added Successfully!');
+                loadTasks();  // Reload the task list
+                updateCharts(); // Refresh the charts
+                $('#taskForm')[0].reset();  // Clear the form after submission
+            },
+            error: function(xhr, status, error) {
+                alert('Error adding task: ' + error);
+            }
         });
+    });
+
+    // Load tasks when the page loads
+    loadTasks();
+    updateCharts();
+});
+
+        
 
         // Filter tasks based on selected option
         $('#combinedFilter').on('change', function(){
@@ -175,8 +263,9 @@
         type: 'POST',
         data: { id: taskId, status: 'Completed' },
         success: function(response) {
-            alert(response);  // Show response message for debugging
+            alert('Task Completed successfully');  // Show response message for debugging
             loadTasks();  // Refresh the task list after update
+            updateCharts();
         },
         error: function(xhr, status, error) {
             alert("Error: " + error); // Show error message
@@ -191,11 +280,16 @@
             let remarks = prompt("Enter reason for not completing the task:");
             if (remarks) {
                 $.post('update_task_status.php', { id: taskId, status: 'In-Progress', remarks: remarks }, function(response){
-                    alert(response);
+                    alert('In-Progress');
                     loadTasks();
+                    updateCharts();
                 });
             }
         });
+ $(document).on('click', '.editTask', function(){
+    let taskId = $(this).data('id');
+    window.location.href = 'edit_task.php?id=' + taskId;  // Redirect to the edit page with the task ID
+});
 
         // Delete Task
         $(document).on('click', '.deleteTask', function(){
@@ -204,42 +298,165 @@
                 $.post('delete_task.php', { id: taskId }, function(response){
                     alert(response);
                     loadTasks();
+                    updateCharts();
                 });
             }
         });
     });
-    $(document).on('click', '.editTask', function(){
-    let taskId = $(this).data('id');
-    
-    // Fetch task details from the server (e.g., using AJAX)
+   
+
+
+$(document).ready(function () {
+    function loadTasks() {
+        $.ajax({
+            url: 'fetch_tasks.php', // Modify to the correct URL if needed
+            type: 'GET',
+            success: function (response) {
+                // Update the table with tasks
+                $('#taskTableBody').html(response);
+
+                // Call function to update pie charts
+                updatePieCharts();
+            }
+        });
+    }
+
+    function updatePieCharts() {
+        $.ajax({
+            url: 'fetch_task_data.php', // New PHP file to fetch task data for the charts
+            type: 'GET',
+            success: function (response) {
+                const taskData = JSON.parse(response);
+
+                const statusData = {
+                    labels: ['Pending', 'In-Progress', 'Completed'],
+                    datasets: [{
+                        data: [taskData.pending, taskData.inProgress, taskData.completed],
+                        backgroundColor: ['#ffcc00', '#007bff', '#28a745'],
+                        hoverOffset: 4
+                    }]
+                };
+
+                const priorityData = {
+                    labels: ['High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [taskData.highPriority, taskData.mediumPriority, taskData.lowPriority],
+                        backgroundColor: ['#ff5733', '#ffbf00', '#7bed9f'],
+                        hoverOffset: 4
+                    }]
+                };
+
+                const taskTypeData = {
+                    labels: ['Bug', 'Enhancement', 'Feature'],
+                    datasets: [{
+                        data: [taskData.bug, taskData.enhancement, taskData.feature],
+                        backgroundColor: ['#e74c3c', '#f39c12', '#3498db'],
+                        hoverOffset: 4
+                    }]
+                };
+
+                // Status Pie Chart
+                new Chart(document.getElementById('statusPieChart'), {
+                    type: 'pie',
+                    data: statusData,
+                });
+
+                // Priority Pie Chart
+                new Chart(document.getElementById('priorityPieChart'), {
+                    type: 'pie',
+                    data: priorityData,
+                });
+
+                // Task Type Pie Chart
+                new Chart(document.getElementById('taskTypePieChart'), {
+                    type: 'pie',
+                    data: taskTypeData,
+                });
+            }
+        });
+    }
+
+    // Initial load of tasks and charts
+    loadTasks();
+});
+
+function loadTasks() {
     $.ajax({
-        url: 'fetch_tasks.php',
+        url: 'fetch_tasks.php', // Ensure this file returns the task list
         type: 'GET',
-        data: { id: taskId },
         success: function(response) {
-            let task = JSON.parse(response);
-            
-            // Fill the task form with the existing task details
-            $('input[name="day"]').val(task.day);
-            $('input[name="module"]').val(task.module);
-            $('textarea[name="task"]').val(task.task);
-            $('select[name="task_type"]').val(task.task_type);
-            $('select[name="priority"]').val(task.priority);
-            $('input[name="expected_delivery_date"]').val(task.expected_delivery_date);
-            $('textarea[name="deep_description"]').val(task.deep_description);
-            $('input[name="status"]').val(task.status);
-            
-            // Change the form action to update the task
-            $('#taskForm').attr('action', 'update_task.php?id=' + taskId);
+            $('#taskTableBody').html(response);
+            updateCharts(); // Refresh the charts after loading tasks
         },
         error: function(xhr, status, error) {
-            alert('Error fetching task details: ' + error);
+            console.error("Error loading tasks:", error);
         }
+    });
+}
+
+
+function updateCharts() {
+    $.ajax({
+        url: 'fetch_task_data.php', // Ensure this file returns JSON stats
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            if (statusChart && priorityChart && taskTypeChart) {
+                statusChart.data.datasets[0].data = [data.pending, data.inProgress, data.completed];
+                priorityChart.data.datasets[0].data = [data.high, data.medium, data.low];
+                taskTypeChart.data.datasets[0].data = [data.bug, data.enhancement, data.feature];
+
+                statusChart.update();
+                priorityChart.update();
+                taskTypeChart.update();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error updating charts:", error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    loadTasks(); // Load tasks when the page loads
+    updateCharts(); // Load charts when the page loads
+});
+
+$(document).ready(function() {
+    // Sorting function
+    function sortTable(column, ascending) {
+        let rows = $('#taskTableBody tr').get();
+        rows.sort(function(a, b) {
+            let valA = $(a).find(`td:eq(${column})`).text().trim();
+            let valB = $(b).find(`td:eq(${column})`).text().trim();
+
+            if (column === 4) { // Sorting for priority
+                let priorityOrder = { "High": 1, "Medium": 2, "Low": 3 };
+                return (priorityOrder[valA] - priorityOrder[valB]) * (ascending ? 1 : -1);
+            } else if (column === 5) { // Sorting for expected delivery date
+                let dateA = new Date(valA);
+                let dateB = new Date(valB);
+                return (dateA - dateB) * (ascending ? 1 : -1);
+            } 
+        });
+
+        $.each(rows, function(index, row) {
+            $('#taskTableBody').append(row);
+        });
+    }
+
+    // Click event for sorting buttons
+    let sortStates = {}; // Store sorting states
+    $('.sort-btn').on('click', function() {
+        let column = $(this).data('sort') === 'priority' ? 4 : 5;
+        sortStates[column] = !sortStates[column]; // Toggle sorting order
+        sortTable(column, sortStates[column]);
     });
 });
 
 
-
 </script>
+<script src="js/notification.js"></script>
+<script src="js/script.js"></script>
 </body>
 </html>

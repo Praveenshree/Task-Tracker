@@ -1,0 +1,172 @@
+/* General Styles */
+
+body {
+    background-color: #e3f2fd !important;
+    /* Light blue background */
+    font-family: 'Poppins', sans-serif !important;
+    color: #333 !important;
+}
+
+.container {
+    background: #ffffff !important;
+    padding: 20px !important;
+    border-radius: 10px !important;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.3s ease-in-out;
+}
+
+
+/* Heading */
+
+h2 {
+    font-size: 32px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    color: #007bff !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+}
+
+
+/* Filters and Search Box */
+
+#combinedFilter,
+#searchBox {
+    border-radius: 10px !important;
+    height: 45px !important;
+    font-size: 16px !important;
+    border: 2px solid #007bff !important;
+}
+
+#searchBox {
+    padding-left: 15px !important;
+}
+
+
+/* Add Task Button */
+
+.btn-primary {
+    background-color: #007bff !important;
+    border: none !important;
+    font-weight: bold !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+    padding: 10px 15px !important;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3 !important;
+}
+
+
+/* Task Form */
+
+.dropdown-menu {
+    border-radius: 8px !important;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3) !important;
+    padding: 20px !important;
+}
+
+.dropdown-menu label {
+    font-weight: bold !important;
+    color: #333 !important;
+    margin-top: 8px !important;
+}
+
+.dropdown-menu input,
+.dropdown-menu select,
+.dropdown-menu textarea {
+    border-radius: 5px !important;
+    border: 2px solid #007bff !important;
+    padding: 8px !important;
+}
+
+
+/* Task Table */
+
+.table {
+    margin-top: 20px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.table th {
+    background-color: #007bff !important;
+    color: white !important;
+    text-align: center !important;
+    font-size: 16px !important;
+    padding: 15px !important;
+}
+
+.table td {
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-size: 15px !important;
+    padding: 12px !important;
+}
+
+
+/* Action Buttons */
+
+.submitTask,
+.inProgressTask,
+.deleteTask,
+.editTask {
+    border: none !important;
+    padding: 8px 12px !important;
+    border-radius: 5px !important;
+    font-size: 14px !important;
+    transition: 0.3s ease-in-out !important;
+}
+
+.submitTask {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.submitTask:hover {
+    background-color: #218838 !important;
+}
+
+.inProgressTask {
+    background-color: #ffc107 !important;
+    color: black !important;
+}
+
+.inProgressTask:hover {
+    background-color: #e0a800 !important;
+}
+
+.deleteTask {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.deleteTask:hover {
+    background-color: #c82333 !important;
+}
+
+.editTask {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+.editTask:hover {
+    background-color: #138496 !important;
+}
+
+
+/* Responsive Design */
+
+@media (max-width: 768px) {
+    .d-flex {
+        flex-direction: column !important;
+    }
+    #searchBox {
+        margin-bottom: 10px !important;
+    }
+    .btn-primary {
+        width: 100% !important;
+    }
+}

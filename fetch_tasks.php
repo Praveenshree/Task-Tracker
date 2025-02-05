@@ -25,10 +25,11 @@ if ($result->num_rows > 0) {
                         <td>{$row['expected_delivery_date']}</td>
                         <td>{$row['deep_description']}</td>
                         <td>{$row['status']}</td>
+                         <td>{$row['remarks']}</td>
                         <td>
                             <button class='btn btn-success btn-sm submitTask' data-id='{$row['id']}'>Submit</button>
                             <button class='btn btn-warning btn-sm inProgressTask' data-id='{$row['id']}'>In-Progress</button>
-                            <button class='btn btn-primary btn-sm editTask' data-id='{$row['id']}'>Edit</button>
+<button class='btn btn-primary btn-sm editTask' data-id='{$row['id']}'>Edit</button>
                             <button class='btn btn-danger btn-sm deleteTask' data-id='{$row['id']}'>Delete</button>
                         </td>
                     </tr>";
